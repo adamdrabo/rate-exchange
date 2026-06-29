@@ -2,7 +2,7 @@
 
 Application Android de conversion entre le dollar canadien (CAD) et le franc CFA (XOF), conçue pour la diaspora africaine au Canada.
 
-![Aperçu de l'app](rate.png)
+<img src="rate.png" width="300" alt="Aperçu de l'app"/>
 
 ## Fonctionnalités
 
