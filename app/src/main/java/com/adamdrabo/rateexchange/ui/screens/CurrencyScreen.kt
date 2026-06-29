@@ -1,5 +1,7 @@
 package com.adamdrabo.rateexchange.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,18 +45,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.adamdrabo.rateexchange.ui.components.RateHistoryChart
 import com.adamdrabo.rateexchange.ui.components.TransferCostRow
 import com.adamdrabo.rateexchange.ui.state.CurrencyState
+import com.adamdrabo.rateexchange.ui.state.HistoryState
 import com.adamdrabo.rateexchange.ui.viewmodel.CurrencyViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CurrencyScreen(
     viewModel: CurrencyViewModel
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val historyState by viewModel.historyData.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.fetchExchangeRates()
+        viewModel.fetchRatesHistory()
     }
 
     var userAmount by remember { mutableStateOf("") }
@@ -105,6 +112,20 @@ fun CurrencyScreen(
                     val sourceCurrency = if (isReversed) "XOF" else "CAD"
                     val targetCurrency = if (isReversed) "CAD" else "XOF"
 
+
+                    val ratesPerDay: List<Pair<String, Double>> = if (historyState is HistoryState.Success) {
+                        (historyState as HistoryState.Success).data
+                            .groupBy { dto -> dto.date }
+                            .mapNotNull { entry ->
+                                val tCAD = entry.value.firstOrNull { it.quote == "CAD" }?.rate
+                                val tXOF = entry.value.firstOrNull { it.quote == "XOF" }?.rate
+                                if (tCAD != null && tXOF != null && tCAD != 0.0) {
+                                    entry.key to (tXOF / tCAD)
+                                } else {
+                                    null
+                                }
+                            }
+                    } else emptyList()
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -178,56 +199,16 @@ fun CurrencyScreen(
                     ) {
                         Text(text = "Taux actuel", color = Color.Gray, fontSize = 14.sp)
                         Text(
-                            text = "1 CAD = ${"%.0f".format(tauxXOF / tauxCAD)} XOF", // Formaté sans décimales pour matcher le "423 XOF" de l'image
+                            text = "1 CAD = ${"%.0f".format(tauxXOF / tauxCAD)} XOF",
                             color = Color.White,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    // Section Graphique Fluctuation (7 jours)
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Fluctuation (7 jours)",
-                            color = Color.Gray,
-                            fontSize = 15.sp,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Start
-                        )
-
-                        Canvas(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .padding(vertical = 4.dp)
-                        ) {
-                            val width = size.width
-                            val height = size.height
-                            val path = Path().apply {
-                                moveTo(0f, height * 0.7f)
-                                lineTo(width * 0.15f, height * 0.65f)
-                                lineTo(width * 0.35f, height * 0.78f)
-                                lineTo(width * 0.52f, height * 0.58f)
-                                lineTo(width * 0.68f, height * 0.68f)
-                                lineTo(width * 0.82f, height * 0.45f)
-                                lineTo(width * 0.92f, height * 0.52f)
-                                lineTo(width * 1f, height * 0.35f)
-                            }
-
-                            drawPath(
-                                path = path,
-                                color = Color(0xFF2F80ED),
-                                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-                            )
-                        }
-                    }
-
+                    RateHistoryChart(ratesPerDay)
 
                     HorizontalDivider(color = Color(0xFF2E2E2E), thickness = 1.dp)
-
 
                     Column(
                         modifier = Modifier.fillMaxWidth(),

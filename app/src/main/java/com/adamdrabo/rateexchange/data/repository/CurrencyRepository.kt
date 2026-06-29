@@ -1,19 +1,19 @@
 package com.adamdrabo.rateexchange.data.repository
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.adamdrabo.rateexchange.data.datastore.ExchangeRateDataStore
 import com.adamdrabo.rateexchange.data.remote.CurrencyApiService
 import com.adamdrabo.rateexchange.data.remote.ExchangeRateDto
+import com.adamdrabo.rateexchange.data.remote.ExchangeRateHistoryDto
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class CurrencyRepository(
    private val apiService: CurrencyApiService,
    private val dataStore: ExchangeRateDataStore
 ) {
 
-    /*
-    Vérifier si 24h se sont écoulées
-    Si oui → appeler l'API, filtrer, mettre en cache, retourner
-    Si non → retourner le cache
-     */
     suspend fun getExchangesRates(): List<ExchangeRateDto> {
 
         val readTimeStamp = dataStore.readTimeStamp()
@@ -39,5 +39,17 @@ class CurrencyRepository(
          ExchangeRateDto(rate = cache.second ?: 0.0, base = "EUR", quote = "XOF")
          )
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun getRatesHistory(): List<ExchangeRateHistoryDto> {
+
+        val dateNow = LocalDate.now()
+        val sevenDaysAgo = dateNow.minusDays(7)
+        val formatsCurrentDate = sevenDaysAgo .format(
+            DateTimeFormatter.ISO_LOCAL_DATE
+        )
+
+       return apiService.getRatesHistory(formatsCurrentDate, "CAD,XOF")
     }
 }
