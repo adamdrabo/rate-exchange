@@ -42,11 +42,11 @@ class CurrencyRepository(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getRatesHistory(): List<ExchangeRateHistoryDto> {
+    suspend fun getRatesHistory(daysToMinus: Long): List<ExchangeRateHistoryDto> {
 
         val dateNow = LocalDate.now()
-        val sevenDaysAgo = dateNow.minusDays(7)
-        val formatsCurrentDate = sevenDaysAgo .format(
+        val pastDate = dateNow.minusDays(daysToMinus)
+        val formatsCurrentDate = pastDate.format(
             DateTimeFormatter.ISO_LOCAL_DATE
         )
 

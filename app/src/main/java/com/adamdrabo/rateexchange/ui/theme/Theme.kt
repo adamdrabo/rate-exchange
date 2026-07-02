@@ -11,26 +11,28 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+ val CustomDarkColorScheme = darkColorScheme(
+    background = AppColors.DarkBackground,
+    surface = AppColors.DarkCard,
+    surfaceVariant = AppColors.DarkInput,
+    onBackground = AppColors.DarkText,
+    onSurface = AppColors.DarkText,
+    onSurfaceVariant = AppColors.DarkSubText,
+    outline = AppColors.DarkBorder,
+    primary = AppColors.BlueAccent,
+    secondary = AppColors.DarkGreen
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+val CustomLightColorScheme = lightColorScheme(
+    background = AppColors.LightBackground,
+    surface = AppColors.LightCard,
+    surfaceVariant = AppColors.LightInput,
+    onBackground = AppColors.LightText,
+    onSurface = AppColors.LightText,
+    onSurfaceVariant = AppColors.LightSubText,
+    outline = AppColors.LightBorder,
+    primary = AppColors.BlueAccent,
+    secondary = AppColors.LightGreen
 )
 
 @Composable
@@ -46,13 +48,13 @@ fun RateExchangeTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> CustomDarkColorScheme
+        else -> CustomLightColorScheme
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = AppTypography,
         content = content
     )
 }

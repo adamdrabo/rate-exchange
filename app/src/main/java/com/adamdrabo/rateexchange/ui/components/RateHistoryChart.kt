@@ -22,19 +22,11 @@ fun  RateHistoryChart(
      ratesPerDay : List<Pair<String, Double>>
 ) {
 
-    //Graphique Fluctuation (7 jours)
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-        Text(
-            text = "Fluctuation (7 jours)",
-            color = Color.Gray,
-            fontSize = 15.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Start
-        )
 
         Canvas(
             modifier = Modifier
