@@ -96,16 +96,18 @@ fun CurrencyScreen(
                 else if (isReversed) (userAmount.toDoubleOrNull() ?: 0.0).let { (it / tauxXOF * tauxCAD).let { "%.2f".format(it) } }
                 else (userAmount.toDoubleOrNull() ?: 0.0).let { (it / tauxCAD * tauxXOF).let { "%.0f".format(it) } }
 
-                val sourceLabel = if (isReversed) "Converti" else "Montant"
-                val targetLabel = if (isReversed) "Montant" else "Converti"
+                val sourceLabel = "Tu envoies"
+                val targetLabel = "Le bénéficiaire reçoit"
                 val sourceCurrency = if (isReversed) "XOF" else "CAD"
                 val targetCurrency = if (isReversed) "CAD" else "XOF"
 
                 LaunchedEffect(userAmount, isReversed, tauxMarche) {
                     val effectiveAmount = userAmount.ifBlank {
-                        if (isReversed) "50000" else "100"
+                        if (resultat != "0" && resultat.isNotBlank()) {
+                            resultat.replace(",", ".")
+                        }
                     }
-                    viewModel.updateTransfertServices(effectiveAmount, isReversed, tauxMarche)
+                    viewModel.updateTransfertServices(effectiveAmount as String, isReversed, tauxMarche)
                 }
 
                 val ratesPerDay: List<Pair<String, Double>> = if (historyState is HistoryState.Success) {
@@ -157,8 +159,11 @@ fun CurrencyScreen(
                         targetCurrency = targetCurrency,
                         onAmountChange = { userAmount = it },
                         onSwapClick = {
-                            isReversed = !isReversed
-                            userAmount = if (isReversed) "50000" else "100"
+                         val montantApresInversion = resultat.replace(",", ".")
+
+                          isReversed = !isReversed
+
+                          userAmount = montantApresInversion
                         }
                     )
 
