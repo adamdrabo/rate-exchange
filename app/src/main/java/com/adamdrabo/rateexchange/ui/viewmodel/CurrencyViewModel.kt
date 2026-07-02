@@ -104,18 +104,24 @@ class CurrencyViewModel (
                     rateMargin = 0.012,
                     deliveryTime = "Instantané"
                 ),
-
+                ProviderConfig(
+                    "Wave Mobile Money",
+                    fixedFee = 0.0,
+                    rateMargin = 0.01,
+                    deliveryTime = "Instantané"
+                ),
                 ProviderConfig(
                     "Wise",
                     fixedFee = 1.50,
                     rateMargin = 0.0,
                     deliveryTime = "~ 1 heure"
                 ),
-
                 ProviderConfig(
                     "Western Union",
-                    fixedFee = 2.99, rateMargin = 0.02,
-                    deliveryTime = "En quelques minutes")
+                    fixedFee = 2.99,
+                    rateMargin = 0.02,
+                    deliveryTime = "En quelques minutes"
+                )
             )
         } else {
             listOf(
@@ -125,12 +131,18 @@ class CurrencyViewModel (
                     rateMargin = 0.01,
                     deliveryTime = "Instantané"
                 ),
-
                 ProviderConfig(
                     "Wise",
                     fixedFee = 1200.0,
                     rateMargin = 0.0,
-                    deliveryTime = "~ 1 jour")
+                    deliveryTime = "~ 1 jour"
+                ),
+                ProviderConfig(
+                    "Western Union",
+                    fixedFee = 2500.0,
+                    rateMargin = 0.02,
+                    deliveryTime = "En quelques minutes"
+                )
             )
         }
 
