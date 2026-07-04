@@ -107,7 +107,7 @@ fun CurrencyScreen(
                             resultat.replace(",", ".")
                         }
                     }
-                    viewModel.updateTransfertServices(effectiveAmount as String, isReversed, tauxMarche)
+                    viewModel.updateTransfertServices(effectiveAmount.toString(), isReversed, tauxMarche)
                 }
 
                 val ratesPerDay: List<Pair<String, Double>> = if (historyState is HistoryState.Success) {
