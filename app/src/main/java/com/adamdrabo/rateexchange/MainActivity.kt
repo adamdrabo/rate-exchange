@@ -22,7 +22,11 @@ class MainActivity : ComponentActivity() {
 
     private val exchangeRateDataStore by lazy { ExchangeRateDataStore(this) }
     private val currencyRepository by lazy { CurrencyRepository(RetrofitInstance.service, exchangeRateDataStore) }
-    private val currencyViewModelFactory by lazy { CurrencyViewModelFactory(currencyRepository) }
+    private val currencyViewModelFactory by lazy {
+        CurrencyViewModelFactory(
+        currencyRepository,
+        exchangeRateDataStore)
+    }
     private val viewmodel: CurrencyViewModel by viewModels { currencyViewModelFactory }
 
     private val themeManager by lazy { ThemeManager(applicationContext) }

@@ -5,9 +5,13 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adamdrabo.rateexchange.data.ServiceUiModel
+import com.adamdrabo.rateexchange.data.datastore.ExchangeRateDataStore
+import com.adamdrabo.rateexchange.data.remote.ExchangeRateHistoryDto
 import com.adamdrabo.rateexchange.data.repository.CurrencyRepository
 import com.adamdrabo.rateexchange.ui.state.CurrencyState
 import com.adamdrabo.rateexchange.ui.state.HistoryState
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +25,8 @@ private data class ProviderConfig(
     val deliveryTime: String
 )
 class CurrencyViewModel (
-   private val repository: CurrencyRepository
+   private val repository: CurrencyRepository,
+   private val exchangeRateDataStore: ExchangeRateDataStore
 ): ViewModel() {
     private val _uiState = MutableStateFlow<CurrencyState>(value = CurrencyState.Loading)
     val uiState: StateFlow<CurrencyState> = _uiState.asStateFlow()
@@ -52,9 +57,9 @@ class CurrencyViewModel (
     @RequiresApi(Build.VERSION_CODES.O)
     fun fetchRatesHistory(period: String) {
         viewModelScope.launch {
-            _historyState.update {
-                HistoryState.Loading
-            }
+            _historyState.update { HistoryState.Loading }
+
+            val gson = Gson()
 
             val daysToMinus = when(period) {
                 "7 J" -> 7L
@@ -64,16 +69,34 @@ class CurrencyViewModel (
             }
 
             try {
-                val historyRates = repository.getRatesHistory(daysToMinus)
+
+                val (timestamp, jsonSaved) = exchangeRateDataStore.readHistoryData()
+                val now = System.currentTimeMillis()
+
+                val isCacheValid = timestamp != null && (now - timestamp < 24 * 60 * 60 * 1000)
+
+                val historyRates = if (isCacheValid && !jsonSaved.isNullOrBlank()) {
+                    val type = object : TypeToken<List<ExchangeRateHistoryDto>>() {}.type
+                    gson.fromJson<List<ExchangeRateHistoryDto>>(jsonSaved, type)
+                } else {
+
+                    val freshRates = repository.getRatesHistory(365L)
+
+                    val json = gson.toJson(freshRates)
+                    exchangeRateDataStore.saveHistoryData(now, json)
+
+                    freshRates
+                }
+
+                val filteredRates = if (daysToMinus >= 365L) historyRates else historyRates.takeLast(daysToMinus.toInt())
 
                 _historyState.update {
-                    HistoryState.Success(historyRates)
+                    HistoryState.Success(filteredRates)
                 }
+
             } catch (e: Exception) {
                 _historyState.update {
-                    HistoryState.Failure(
-                        message = e.message ?:
-                    "Taux indisponibles pour la période : $period")
+                    HistoryState.Failure(message = e.message ?: "Taux indisponibles")
                 }
             }
         }
